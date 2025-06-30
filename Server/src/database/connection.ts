@@ -20,9 +20,9 @@ sequelize.authenticate()
     });
 
 
-sequelize.sync ({ force: false })
-.then(() => {
-    console.log("All models were synchronized successfully.");
+sequelize.sync({alter:false})
+.then(()=>{
+    console.log("migrated successfully new changes")
 })
 .catch((error) => {
     console.error("Error synchronizing models:", error);

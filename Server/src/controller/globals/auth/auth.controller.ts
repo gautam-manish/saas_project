@@ -13,7 +13,8 @@
 
 import { Request, Response } from "express";
 import User from "../../../database/models/user.model";
-
+import bcrypt from "bcrypt";
+/*
 const registerUser = async (req: Request, res: Response) => {
   const username = req.body.username;
   const email = req.body.email;
@@ -36,9 +37,37 @@ const registerUser = async (req: Request, res: Response) => {
     });
   }
 };
+*/
 
 class AuthController {
-  registerUser(req: Request, res: Response) {}
+  static async registerUser(req: Request, res: Response) {
+    if(req.body==undefined ) {
+      res.status(400).json({
+        message: "No data was sent",
+      });
+      return;
+    }
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    // const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      res.status(400).json({
+        message: "All fields are required",
+      });
+    } else {
+      // insert into Users table
+      await User.create({
+        username: username,
+        email: email,
+        password: bcrypt.hashSync(password, 12)// Note: Password should be hashed before storing
+      });
+      res.status(201).json({
+        message: "User registered successfully",
+      });
+    }
+  }
 }
 
-export {registerUser}
+export default AuthController;
