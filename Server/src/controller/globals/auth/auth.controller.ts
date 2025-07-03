@@ -14,6 +14,7 @@
 import { Request, Response } from "express";
 import User from "../../../database/models/user.model";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 /*
 const registerUser = async (req: Request, res: Response) => {
   const username = req.body.username;
@@ -61,11 +62,50 @@ class AuthController {
       await User.create({
         username: username,
         email: email,
-        password: bcrypt.hashSync(password, 12)// Note: Password should be hashed before storing
+        password: bcrypt.hashSync(password, 12)// Note: Password should be hashed before storing // hasing uses blowfish algorithm
       });
       res.status(201).json({
         message: "User registered successfully",
       });
+    }
+  }
+
+  static async loginUser(req: Request, res: Response) {
+    const {email, password} = req.body;
+    if(!email || !password) {
+      res.status(400).json({
+        message: "Please provide email and password",
+      });
+      return;
+    }
+    const data = await User.findAll({
+      where:{
+        email : email
+      }
+    })
+    if(data.length === 0) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      
+    }else{
+      const isPasswordMatch = bcrypt.compareSync(password, data[0].password)
+      if(isPasswordMatch) {
+        // login vayo, token generate garne
+        const token = jwt.sign({id : data[0].id}, "this_is_a_secret_key",{
+          expiresIn: "20d"
+          
+        })
+        res.json({
+          token : token,
+          message : "Login successful"
+          
+        })
+      } else {
+        res.status(401).json({
+          message: "Credentials didn't match", 
+        });
+      }
     }
   }
 }
